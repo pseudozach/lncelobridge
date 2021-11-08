@@ -644,7 +644,7 @@ class SwapManager {
     const currency = this.currencies.get(currencySymbol);
     
     if (!currency) {
-      // console.log("swapmanager.ts line 638");
+      console.log("swapmanager.ts line 638");
       throw Errors.CURRENCY_NOT_FOUND(currencySymbol).message;
     }
 

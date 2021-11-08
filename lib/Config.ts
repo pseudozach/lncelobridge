@@ -161,6 +161,7 @@ type ConfigType = {
 
   ethereum: EthereumConfig;
   rsk: RskConfig;
+  celo: EthereumConfig;
 };
 
 class Config {
@@ -346,6 +347,25 @@ class Config {
         tokens: [],
       },
       
+      celo: {
+        providerEndpoint: '',
+
+        infura: {
+          apiKey: '',
+          network: 'rinkeby',
+        },
+
+        alchemy: {
+          apiKey: '',
+          network: 'rinkeby',
+        },
+
+        etherSwapAddress: '',
+        erc20SwapAddress: '',
+
+        tokens: [],
+      },
+
       rsk: {
         providerEndpoint: '',
 

@@ -312,6 +312,17 @@ class Boltz {
       });
     });
 
+    this.config.celo.tokens.forEach((token) => {
+      result.set(token.symbol, {
+        symbol: token.symbol,
+        type: token.symbol === 'CELO' ? CurrencyType.Celo : CurrencyType.ERC20,
+        limits: {
+          ...token,
+        },
+        provider: this.ethereumManager?.provider,
+      });
+    });
+
     this.logger.info(`parsecurrencies returning final result: ${result}` + JSON.stringify(Array.from(result)));
     return result;
   }
