@@ -1,0 +1,118 @@
+syntax = "proto3";
+
+package boltzrpc;
+
+service Boltz {
+  /* Gets general information about this Boltz instance and the nodes it is connected to */
+  rpc GetInfo (GetInfoRequest) returns (GetInfoResponse);
+
+  /* Gets the balance of all wallets */
+  rpc GetBalance (GetBalanceRequest) returns (GetBalanceResponse);
+
+  /* Derives a keypair from the index of an HD wallet */
+  rpc DeriveKeys (DeriveKeysRequest) returns (DeriveKeysResponse);
+
+  /* Gets an address of a specified wallet */
+  rpc GetAddress (GetAddressRequest) returns (GetAddressResponse);
+
+  /* Sends onchain coins to a specified address */
+  rpc SendCoins (SendCoinsRequest) returns (SendCoinsResponse);
+
+  /* Updates the timeout block delta of a pair */
+  rpc UpdateTimeoutBlockDelta (UpdateTimeoutBlockDeltaRequest) returns (UpdateTimeoutBlockDeltaResponse);
+}
+
+enum OutputType {
+  BECH32 = 0;
+  COMPATIBILITY = 1;
+  LEGACY = 2;
+}
+
+message GetInfoRequest {}
+message GetInfoResponse {
+  string version = 1;
+  map<string, CurrencyInfo> chains = 2;
+}
+
+message CurrencyInfo {
+  ChainInfo chain = 1;
+  LndInfo lnd = 2;
+}
+
+message ChainInfo {
+  uint32 version = 1;
+  uint64 blocks = 2;
+  uint64 scanned_blocks = 3;
+  uint64 connections = 4;
+
+  string error = 5;
+}
+
+message LndInfo {
+  string version = 1;
+  LndChannels lnd_channels = 2;
+  uint64 block_height = 3;
+
+  string error = 4;
+}
+message LndChannels {
+  uint32 active = 1;
+  uint32 inactive = 2;
+  uint32 pending = 3;
+}
+
+message GetBalanceRequest {}
+message GetBalanceResponse {
+  map<string, Balance> balances = 1;
+}
+
+message Balance {
+  WalletBalance wallet_balance = 1;
+  LightningBalance lightning_balance = 2;
+}
+message LightningBalance {
+  uint64 local_balance = 1;
+  uint64 remote_balance = 2;
+}
+message WalletBalance {
+  uint64 total_balance = 1;
+  uint64 confirmed_balance = 2;
+  uint64 unconfirmed_balance = 3;
+}
+
+message DeriveKeysRequest {
+  string symbol = 1;
+  uint32 index = 2;
+}
+
+message DeriveKeysResponse {
+  string public_key = 1;
+  string private_key = 2;
+}
+
+message GetAddressRequest {
+  string symbol = 1;
+}
+message GetAddressResponse {
+  string address = 1;
+}
+
+message SendCoinsRequest {
+  string symbol = 1;
+  string address = 2;
+  uint64 amount = 3;
+
+  // sat/vbyte for UTXO based chains or gas price in GWEI for account based ones
+  uint32 fee = 4;
+  bool send_all = 5;
+}
+message SendCoinsResponse {
+  string transaction_id = 1;
+  uint32 vout = 2;
+}
+
+message UpdateTimeoutBlockDeltaRequest {
+  string pair = 1;
+  uint32 new_delta = 2;
+}
+message UpdateTimeoutBlockDeltaResponse {}
