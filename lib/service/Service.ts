@@ -335,9 +335,15 @@ class Service {
       swapContracts: Map<string, string>,
       tokens: Map<string, string>,
     },
+    celo?: {
+      network: Network,
+      swapContracts: Map<string, string>,
+      tokens: Map<string, string>,
+    },
   } => {
-    if (this.walletManager.rskManager === undefined) {
-      throw Errors.RSK_NOT_ENABLED();
+    if (this.walletManager.celoManager === undefined) {
+      // throw Errors.RSK_NOT_ENABLED();
+      throw new Error("CELO not enabled")
     }
 
     return {
@@ -359,6 +365,16 @@ class Service {
         swapContracts: new Map<string, string>([
           ['RbtcSwap', this.walletManager.rskManager.etherSwap.address],
           ['ERC20Swap', this.walletManager.rskManager.erc20Swap.address],
+        ]),
+      },
+      celo: 
+      this.walletManager.celoManager === undefined ? undefined :
+      {
+        network: this.walletManager.celoManager.network,
+        tokens: this.walletManager.celoManager.tokenAddresses,
+        swapContracts: new Map<string, string>([
+          ['RbtcSwap', this.walletManager.celoManager.etherSwap.address],
+          ['ERC20Swap', this.walletManager.celoManager.erc20Swap.address],
         ]),
       },
     };
@@ -471,6 +487,7 @@ class Service {
 
         return gasPrice.div(gweiDecimals).toNumber();
       } else {
+        console.log('service.474 NOT_SUPPORTED_BY_SYMBOL');
         throw Errors.NOT_SUPPORTED_BY_SYMBOL(currency.symbol);
       }
     };

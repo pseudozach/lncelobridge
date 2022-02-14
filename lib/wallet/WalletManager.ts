@@ -12,6 +12,7 @@ import LndClient from '../lightning/LndClient';
 import { CurrencyType } from '../consts/Enums';
 import KeyRepository from '../db/KeyRepository';
 import EthereumManager from './ethereum/EthereumManager';
+import CeloManager from './celo/CeloManager';
 import RskManager from './rsk/RskManager';
 import ChainTipRepository from '../db/ChainTipRepository';
 import { KeyProviderType } from '../db/models/KeyProvider';
@@ -54,6 +55,7 @@ class WalletManager {
 
   public ethereumManager?: EthereumManager;
   public rskManager?: RskManager;
+  public celoManager?: CeloManager;
 
   private readonly mnemonic: string;
   private readonly masterNode: BIP32Interface;
