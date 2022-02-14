@@ -19,6 +19,7 @@ import { CurrencyType } from './consts/Enums';
 import BackupScheduler from './backup/BackupScheduler';
 import ChainTipRepository from './db/ChainTipRepository';
 import EthereumManager from './wallet/ethereum/EthereumManager';
+import CeloManager from './wallet/celo/CeloManager';
 import RskManager from './wallet/rsk/RskManager';
 import WalletManager, { Currency } from './wallet/WalletManager';
 import NotificationProvider from './notifications/NotificationProvider';
@@ -40,6 +41,7 @@ class Boltz {
 
   private readonly ethereumManager?: EthereumManager;
   private readonly rskManager?: RskManager;
+  private readonly celoManager?: CeloManager;
 
   constructor(config: Arguments<any>) {
     this.config = new Config().load(config);
@@ -71,17 +73,26 @@ class Boltz {
       this.logger.warn(`Disabled Rootstock integration because: ${formatError(error)}`);
     }
 
+    try {
+      this.celoManager = new CeloManager(
+        this.logger,
+        this.config.celo,
+      );
+    } catch (error) {
+      this.logger.warn(`Disabled Rootstock integration because: ${formatError(error)}`);
+    }
+
     this.currencies = this.parseCurrencies();
 
     const walletCurrencies = Array.from(this.currencies.values());
 
     if (fs.existsSync(this.config.mnemonicpath)) {
-      this.walletManager = new WalletManager(this.logger, this.config.mnemonicpath, walletCurrencies, this.ethereumManager, this.rskManager);
+      this.walletManager = new WalletManager(this.logger, this.config.mnemonicpath, walletCurrencies, this.ethereumManager, this.rskManager, this.celoManager);
     } else {
       const mnemonic = generateMnemonic();
       this.logger.info(`Generated new mnemonic: ${mnemonic}`);
 
-      this.walletManager = WalletManager.fromMnemonic(this.logger, mnemonic, this.config.mnemonicpath, walletCurrencies, this.ethereumManager, this.rskManager);
+      this.walletManager = WalletManager.fromMnemonic(this.logger, mnemonic, this.config.mnemonicpath, walletCurrencies, this.ethereumManager, this.rskManager, this.celoManager);
     }
 
     try {
@@ -148,7 +159,7 @@ class Boltz {
         
         // console.log("currency: ", currency);
         if (currency.chainClient) {
-          this.logger.info(`boltz start loop currency connectChainClient: ${currency}` + JSON.stringify(currency));
+          // this.logger.info(`boltz start loop currency connectChainClient: ${currency}` + JSON.stringify(currency));
           await this.connectChainClient(currency.chainClient, chainTipRepository);
 
           if (currency.lndClient) {
@@ -192,6 +203,11 @@ class Boltz {
           if (this.walletManager.rskManager) {
             logRescan(chainTip);
             rescanPromises.push(this.walletManager.rskManager.contractEventHandler.rescan(chainTip.height));
+          }
+        } else if (chainTip.symbol === 'CELO') {
+          if (this.walletManager.celoManager) {
+            logRescan(chainTip);
+            rescanPromises.push(this.walletManager.celoManager.contractEventHandler.rescan(chainTip.height));
           }
         } else {
           // if not ETH or RBTC
@@ -319,7 +335,7 @@ class Boltz {
         limits: {
           ...token,
         },
-        provider: this.ethereumManager?.provider,
+        provider: this.celoManager?.provider,
       });
     });
 
