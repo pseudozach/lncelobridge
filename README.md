@@ -14,8 +14,7 @@ ERC20 swap contract: [0x58afA0afF6F4451f113c9D90CF14393205f2c8C0](https://alfajo
 * Start btc & lnd  
 `npm run docker:regtest`
 * No need to start local celo node - regtest does not exist - connect to public node
-<!-- `npm run celo:geth:alfajores` -->
-* Fund signer account from testnet faucet 
+* Fund signer account from [testnet faucet](https://celo.org/developers/faucet)
 * Copy boltz.conf to ~/.boltz/boltz.conf and modify as needed  
 * Start the app  
 `npm run start`
