@@ -1,22 +1,31 @@
 # List the start up tasks. Learn more https://www.gitpod.io/docs/config-start-tasks/
 tasks:
   # - init: |
-  #     mkdir $HOME/Downloads
-  #     wget https://github.com/rsksmart/rskj/releases/download/IRIS-3.0.1/rskj-core-3.0.1-IRIS-all.jar -P $HOME/Downloads
-
+  #     git clone https://github.com/celo-org/celo-blockchain.git /workspace/celo-blockchain
+  #     cd /workspace/celo-blockchain
+  #     make geth
+  #   command: |
+  #     ./build/bin/geth --alfajores console
+  # - init: |
   #     mkdir ~/.boltz
   #     cp boltz.gitpod.conf ~/.boltz/boltz.conf
-  #   command: yarn rsk:geth
+  #   command: |
+  #     yarn celo:geth:alfajores
+  #   # docker run doesnt work
   - init: |
-        sudo apt install rsync --assume-yes
-        sudo add-apt-repository -y ppa:ethereum/ethereum
-        sudo apt-get update --assume-yes
-        sudo apt-get install ethereum --assume-yes
+      nvm i 12
+      sudo apt-get install libusb-dev libusb-1.0-0-dev -y
+      npm install -g @celo/celocli
     command: |
       echo 'web3.eth.defaultAccount = eth.accounts[0]'
       echo 'loadScript("/workspace/lnsovbridge/etherswap.js")'
       echo 'loadScript("/workspace/lnsovbridge/erc20swap.js")'
       geth attach http://127.0.0.1:4444/
+
+    # sudo apt install rsync --assume-yes
+    # sudo add-apt-repository -y ppa:ethereum/ethereum
+    # sudo apt-get update --assume-yes
+    # sudo apt-get install ethereum --assume-yes
     # fund metamask with regtest rsk - rpc url: https://4444-scarlet-kite-mva383vt.ws-us18.gitpod.io, chainid: 33
     # eth.sendTransaction({from:eth.accounts[1], to:'0x3a240f3911634410fc73F8C5192070f482369D30', value: web3.toWei(10, "ether"), gas:21000});
     # fund boltz rsk signer with same command as above
@@ -33,7 +42,7 @@ tasks:
   - init: |
       npm install
     command: |
-      echo regtest rsk - rpc url: https://4444-${GITPOD_WORKSPACE_URL:8}, chainid: 33
+      echo alfajores celo - rpc url: https://4444-${GITPOD_WORKSPACE_URL:8}, chainid: 33
       echo npm run dev
   #npm run dev
   - init: |
