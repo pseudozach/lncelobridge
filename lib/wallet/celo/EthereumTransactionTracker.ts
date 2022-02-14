@@ -28,6 +28,16 @@ class EthereumTransactionTracker {
 
     // Connecting to Alfajores testnet
     this.localProvider = new CeloProvider('https://alfajores-forno.celo-testnet.org')
+    const originalBlockFormatter = this.localProvider.formatter._block;
+    this.localProvider.formatter._block = (value, format) => {
+      return originalBlockFormatter(
+        {
+          gasLimit: 0,
+          ...value,
+        },
+        format,
+      );
+    };
     await this.localProvider.ready
 
     // await this.scanBlock(await this.provider.getBlockNumber());
