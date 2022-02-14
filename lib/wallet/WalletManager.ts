@@ -63,7 +63,7 @@ class WalletManager {
 
   private readonly derivationPath = 'm/0';
 
-  constructor(private logger: Logger, mnemonicPath: string, private currencies: Currency[], ethereumManager?: EthereumManager, rskManager?: RskManager) {
+  constructor(private logger: Logger, mnemonicPath: string, private currencies: Currency[], ethereumManager?: EthereumManager, rskManager?: RskManager, celoManager?: CeloManager) {
     this.mnemonic = this.loadMnemonic(mnemonicPath);
     this.masterNode = fromSeed(mnemonicToSeedSync(this.mnemonic));
 
@@ -71,19 +71,20 @@ class WalletManager {
 
     this.ethereumManager = ethereumManager;
     this.rskManager = rskManager;
+    this.celoManager = celoManager;
   }
 
   /**
    * Initializes a new WalletManager with a mnemonic
    */
-  public static fromMnemonic = (logger: Logger, mnemonic: string, mnemonicPath: string, currencies: Currency[], ethereumManager?: EthereumManager, rskManager?: RskManager): WalletManager => {
+  public static fromMnemonic = (logger: Logger, mnemonic: string, mnemonicPath: string, currencies: Currency[], ethereumManager?: EthereumManager, rskManager?: RskManager, celoManager?: CeloManager): WalletManager => {
     if (!validateMnemonic(mnemonic)) {
       throw(Errors.INVALID_MNEMONIC(mnemonic));
     }
 
     fs.writeFileSync(mnemonicPath, mnemonic);
 
-    return new WalletManager(logger, mnemonicPath, currencies, ethereumManager, rskManager);
+    return new WalletManager(logger, mnemonicPath, currencies, ethereumManager, rskManager, celoManager);
   }
 
   public init = async (chainTipRepository: ChainTipRepository): Promise<void> => {
@@ -167,6 +168,15 @@ class WalletManager {
 
       for (const [symbol, rskWallet] of rskWallets) {
         this.wallets.set(symbol, rskWallet);
+      }
+    }
+
+    if (this.celoManager) {
+      this.logger.info("inited celoManager inside WalletManager");
+      const celoWallets = await this.celoManager.init(this.mnemonic, chainTipRepository);
+
+      for (const [symbol, celoWallet] of celoWallets) {
+        this.wallets.set(symbol, celoWallet);
       }
     }
   }
