@@ -11,8 +11,8 @@ Testnet version is deployed at: xxx
 `cd lncelobridge && npm i && npm run compile`  
 * Start btc & lnd  
 `npm run docker:regtest`
-<!-- * Start rsk  
-`npm run rsk:geth` -->
+* No need to start local celo node - regtest does not exist - connect to public node
+<!-- `npm run celo:geth:alfajores` -->
 * Fund a regtest account and deploy latest contracts  
 * Copy boltz.conf to ~/.boltz/boltz.conf and modify as needed  
 * Start the app  
