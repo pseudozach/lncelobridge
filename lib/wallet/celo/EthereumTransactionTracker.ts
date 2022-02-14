@@ -55,20 +55,23 @@ class EthereumTransactionTracker {
       // const block = await this.provider.getBlockWithTransactions(blockNumber);
       const block = await this.localProvider.getBlockWithTransactions(blockNumber);
 
-      for (const transaction of block.transactions) {
-        if (transaction.from === this.walletAddress) {
-          const confirmedTransactions = await this.pendingEthereumTransactionRepository.findByNonce(transaction.nonce);
-  
-          if (confirmedTransactions.length > 0) {
-            this.logger.debug(`Removing ${confirmedTransactions.length} confirmed Celo transactions`);
-  
-            for (const confirmedTransaction of confirmedTransactions) {
-              this.logger.silly(`Removing confirmed Celo transaction: ${confirmedTransaction.hash}`);
-              await confirmedTransaction.destroy();
+      if(block.transactions.length > 0) {
+        for (const transaction of block.transactions) {
+          if (transaction.from === this.walletAddress) {
+            const confirmedTransactions = await this.pendingEthereumTransactionRepository.findByNonce(transaction.nonce);
+    
+            if (confirmedTransactions.length > 0) {
+              this.logger.debug(`Removing ${confirmedTransactions.length} confirmed Celo transactions`);
+    
+              for (const confirmedTransaction of confirmedTransactions) {
+                this.logger.silly(`Removing confirmed Celo transaction: ${confirmedTransaction.hash}`);
+                await confirmedTransaction.destroy();
+              }
             }
           }
-        }
-      }      
+        }     
+      }
+       
     } catch(error) {
       this.logger.error('celo scanBlock error ' + error.message);
     }
