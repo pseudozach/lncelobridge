@@ -47,7 +47,7 @@ tasks:
       echo "sell result come lava vibrant raw decline town fence improve remain drift" > ~/.boltz/seed.dat
       echo alfajores celo - rpc url: https://alfajores-forno.celo-testnet.org, chainid: 44787
       echo npm run dev
-  #npm run dev
+  # signer account: 0x8cfd0abc0ee83f5E006bD7929dF9FE6D6e6b72c2
   - init: |
       git clone https://github.com/pseudozach/boltz-frontend.git /workspace/boltz-frontend
       export REACT_APP_BOLTZ_API=https://9001-${GITPOD_WORKSPACE_URL:8}

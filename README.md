@@ -4,7 +4,7 @@
 * It uses submarine-swaps to enable trustless swaps between Celo and Bitcoin on Lightning Network. Swaps are non-custodial and the exchange is KYC-free.
 
 Testnet (alfajores) contracts are deployed at:
-Main swap contract: [0xef9dfABCAB725Ca489E969Ff606247207f90f865](https://alfajores-blockscout.celo-testnet.org/address/0xef9dfABCAB725Ca489E969Ff606247207f90f865/transactions)
+Main swap contract: [0xef9dfABCAB725Ca489E969Ff606247207f90f865](https://alfajores-blockscout.celo-testnet.org/address/0xef9dfABCAB725Ca489E969Ff606247207f90f865/transactions)  
 ERC20 swap contract: [0x58afA0afF6F4451f113c9D90CF14393205f2c8C0](https://alfajores-blockscout.celo-testnet.org/address/0x58afA0afF6F4451f113c9D90CF14393205f2c8C0/transactions)
 
 ## install
