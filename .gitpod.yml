@@ -42,7 +42,10 @@ tasks:
   - init: |
       npm install
     command: |
-      echo alfajores celo - rpc url: https://4444-${GITPOD_WORKSPACE_URL:8}, chainid: 33
+      mkdir ~/.boltz
+      cp boltz.gitpod.conf ~/.boltz/boltz.conf
+      echo "sell result come lava vibrant raw decline town fence improve remain drift" > ~/.boltz/seed.dat
+      echo alfajores celo - rpc url: https://alfajores-forno.celo-testnet.org, chainid: 44787
       echo npm run dev
   #npm run dev
   - init: |
