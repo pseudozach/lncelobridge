@@ -3,7 +3,7 @@
 * LN-CELO Bridge aims to enable instant trustless swaps between CELO and Lightning Network.
 * It uses submarine-swaps to enable trustless swaps between Celo and Bitcoin on Lightning Network. Swaps are non-custodial and the exchange is KYC-free.
 
-Testnet (alfajores) contracts are deployed at:
+Testnet (alfajores) contracts are deployed at:  
 Main swap contract: [0xef9dfABCAB725Ca489E969Ff606247207f90f865](https://alfajores-blockscout.celo-testnet.org/address/0xef9dfABCAB725Ca489E969Ff606247207f90f865/transactions)  
 ERC20 swap contract: [0x58afA0afF6F4451f113c9D90CF14393205f2c8C0](https://alfajores-blockscout.celo-testnet.org/address/0x58afA0afF6F4451f113c9D90CF14393205f2c8C0/transactions)
 
@@ -15,7 +15,7 @@ ERC20 swap contract: [0x58afA0afF6F4451f113c9D90CF14393205f2c8C0](https://alfajo
 `npm run docker:regtest`
 * No need to start local celo node - regtest does not exist - connect to public node
 * Fund signer account from [testnet faucet](https://celo.org/developers/faucet)
-* Copy boltz.conf to ~/.boltz/boltz.conf and modify as needed  
+* Copy boltz.gitpod.conf to ~/.boltz/boltz.conf and modify as needed  
 * Start the app  
 `npm run start`
 
