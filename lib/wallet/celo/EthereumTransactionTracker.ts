@@ -1,4 +1,6 @@
-import { providers, Signer } from 'ethers';
+// import { providers, Signer } from 'ethers';
+import { CeloProvider } from '@celo-tools/celo-ethers-wrapper'
+import { CeloWallet } from '@celo-tools/celo-ethers-wrapper'
 import Logger from '../../Logger';
 import PendingEthereumTransactionRepository from '../../db/PendingEthereumTransactionRepository';
 
@@ -7,17 +9,29 @@ class EthereumTransactionTracker {
 
   private walletAddress!: string;
 
+  private localProvider!: CeloProvider;
+
   constructor(
     private logger: Logger,
-    private provider: providers.Provider,
-    private wallet: Signer,
+    // private provider: providers.Provider,
+    // private provider: CeloProvider,
+    // private wallet: Signer,
+    private wallet: CeloWallet,
   ) {}
 
   public init = async (): Promise<void> => {
     this.walletAddress = await this.wallet.getAddress();
-    this.logger.info(`Starting Ethereum transaction tracker for address: ${this.walletAddress}`);
+    this.logger.info(`Starting Celo transaction tracker for address: ${this.walletAddress}`);
 
-    await this.scanBlock(await this.provider.getBlockNumber());
+    // const celoBlockNumber = await this.provider.getBlockNumber();
+    // this.logger.verbose('Celo blocknumber: '+ celoBlockNumber);
+
+    // Connecting to Alfajores testnet
+    this.localProvider = new CeloProvider('https://alfajores-forno.celo-testnet.org')
+    await this.localProvider.ready
+
+    // await this.scanBlock(await this.provider.getBlockNumber());
+    await this.scanBlock(await this.localProvider.getBlockNumber());
   }
 
   /**
@@ -26,22 +40,29 @@ class EthereumTransactionTracker {
    * in that class already
    */
   public scanBlock = async (blockNumber: number): Promise<void> => {
-    const block = await this.provider.getBlockWithTransactions(blockNumber);
+    try {
+      // console.log('celo tx tracker provider', this.provider, blockNumber);
+      // const block = await this.provider.getBlockWithTransactions(blockNumber);
+      const block = await this.localProvider.getBlockWithTransactions(blockNumber);
 
-    for (const transaction of block.transactions) {
-      if (transaction.from === this.walletAddress) {
-        const confirmedTransactions = await this.pendingEthereumTransactionRepository.findByNonce(transaction.nonce);
-
-        if (confirmedTransactions.length > 0) {
-          this.logger.debug(`Removing ${confirmedTransactions.length} confirmed Ethereum transactions`);
-
-          for (const confirmedTransaction of confirmedTransactions) {
-            this.logger.silly(`Removing confirmed Ethereum transaction: ${confirmedTransaction.hash}`);
-            await confirmedTransaction.destroy();
+      for (const transaction of block.transactions) {
+        if (transaction.from === this.walletAddress) {
+          const confirmedTransactions = await this.pendingEthereumTransactionRepository.findByNonce(transaction.nonce);
+  
+          if (confirmedTransactions.length > 0) {
+            this.logger.debug(`Removing ${confirmedTransactions.length} confirmed Celo transactions`);
+  
+            for (const confirmedTransaction of confirmedTransactions) {
+              this.logger.silly(`Removing confirmed Celo transaction: ${confirmedTransaction.hash}`);
+              await confirmedTransaction.destroy();
+            }
           }
         }
-      }
+      }      
+    } catch(error) {
+      this.logger.error('celo scanBlock error ' + error.message);
     }
+
   }
 }
 

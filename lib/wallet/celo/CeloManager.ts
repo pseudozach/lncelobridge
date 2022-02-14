@@ -3,6 +3,8 @@ import { ERC20 } from 'boltz-core/typechain/ERC20';
 import { EtherSwap } from 'boltz-core/typechain/EtherSwap';
 import { ERC20Swap } from 'boltz-core/typechain/ERC20Swap';
 import { constants, Contract, utils, Wallet as EthersWallet } from 'ethers';
+// import { CeloProvider } from '@celo-tools/celo-ethers-wrapper'
+// import { CeloWallet } from '@celo-tools/celo-ethers-wrapper'
 import GasNow from './GasNow';
 import Errors from '../Errors';
 import Wallet from '../Wallet';
@@ -14,7 +16,7 @@ import InjectedProvider from './InjectedProvider';
 import { CurrencyType } from '../../consts/Enums';
 import ContractEventHandler from './ContractEventHandler';
 import ChainTipRepository from '../../db/ChainTipRepository';
-import EtherWalletProvider from '../providers/EtherWalletProvider';
+import CeloWalletProvider from '../providers/CeloWalletProvider';
 import ERC20WalletProvider from '../providers/ERC20WalletProvider';
 import EthereumTransactionTracker from './EthereumTransactionTracker';
 
@@ -95,15 +97,15 @@ class CeloManager {
       this.checkContractVersion('ERC20Swap', this.erc20Swap, CeloManager.supportedContractVersions.ERC20Swap),
     ]);
 
-    this.logger.verbose(`Using Ethereum signer: ${this.address}`);
+    this.logger.verbose(`Using Celo signer: ${this.address}`);
 
     const currentBlock = await signer.provider!.getBlockNumber();
-    const chainTip = await chainTipRepository.findOrCreateTip('ETH', currentBlock);
+    const chainTip = await chainTipRepository.findOrCreateTip('CELO', currentBlock);
 
     this.contractHandler.init(this.etherSwap, this.erc20Swap);
     this.contractEventHandler.init(this.etherSwap, this.erc20Swap);
 
-    this.logger.verbose(`Ethereum chain status: ${stringify({
+    this.logger.verbose(`Celo chain status: ${stringify({
       chainId: await signer.getChainId(),
       blockNumber: currentBlock,
     })}`);
@@ -114,14 +116,14 @@ class CeloManager {
     ).init();
     const transactionTracker = await new EthereumTransactionTracker(
       this.logger,
-      this.provider,
+      // this.provider, // removed - using localProvider for celo
       signer,
     );
 
     await transactionTracker.init();
 
     this.provider.on('block', async (blockNumber: number) => {
-      this.logger.silly(`Got new Ethereum block: ${ blockNumber }`);
+      this.logger.silly(`Got new Celo block: ${ blockNumber }`);
 
       await Promise.all([
         chainTipRepository.updateTip(chainTip, blockNumber),
@@ -157,15 +159,15 @@ class CeloManager {
           throw Errors.INVALID_ETHEREUM_CONFIGURATION(`missing decimals configuration for token: ${token.symbol}`);
         }
       } else {
-        if (token.symbol === 'ETH') {
-          if (!wallets.has('ETH')) {
-            wallets.set('ETH', new Wallet(
+        if (token.symbol === 'CELO') {
+          if (!wallets.has('CELO')) {
+            wallets.set('CELO', new Wallet(
               this.logger,
-              CurrencyType.Ether,
-              new EtherWalletProvider(this.logger, signer),
+              CurrencyType.Celo,
+              new CeloWalletProvider(this.logger, signer),
             ));
           } else {
-            throw Errors.INVALID_ETHEREUM_CONFIGURATION('duplicate Ether token config');
+            throw Errors.INVALID_ETHEREUM_CONFIGURATION('duplicate Celo token config');
           }
         } else {
           throw Errors.INVALID_ETHEREUM_CONFIGURATION(`missing token contract address for: ${stringify(token)}`);

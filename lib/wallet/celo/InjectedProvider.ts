@@ -1,4 +1,6 @@
 import { BigNumber, BigNumberish, providers, utils } from 'ethers';
+// import { CeloProvider } from '@celo-tools/celo-ethers-wrapper'
+// import { CeloWallet } from '@celo-tools/celo-ethers-wrapper'
 import { BlockWithTransactions } from '@ethersproject/abstract-provider';
 import Errors from './Errors';
 import Logger from '../../Logger';
@@ -17,6 +19,7 @@ enum EthProviderService {
  * and, depending on the configuration, falls back to Alchemy and Infura as Web3 provider
  */
 class InjectedProvider implements providers.Provider {
+// class InjectedProvider implements CeloProvider {
   public _isProvider = true;
 
   private providers = new Map<string, providers.WebSocketProvider>();
@@ -151,7 +154,7 @@ class InjectedProvider implements providers.Provider {
   }
 
   public getLogs = (filter: providers.Filter): Promise<Array<providers.Log>> => {
-    this.logger.error("eth getLogs " + JSON.stringify(filter));
+    this.logger.error("celo getLogs " + JSON.stringify(filter));
     return this.forwardMethod('getLogs', filter);
   }
 
@@ -188,14 +191,14 @@ class InjectedProvider implements providers.Provider {
   }
 
   public resolveName = (name: string): Promise<string> => {
-    this.logger.error("eth resolveName tx: " + name);
+    this.logger.error("celo resolveName tx: " + name);
     return this.forwardMethod('resolveName', name);
   }
 
   public sendTransaction = async (signedTransaction: string): Promise<providers.TransactionResponse> => {
     const transaction = utils.parseTransaction(signedTransaction);
 
-    this.logger.silly(`Sending Ethereum transaction: ${transaction.hash}`);
+    this.logger.silly(`Sending Celo transaction: ${transaction.hash}`);
     await this.pendingEthereumTransactionRepository.addTransaction(
       transaction.hash!,
       transaction.nonce,
