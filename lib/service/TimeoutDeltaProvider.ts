@@ -19,6 +19,7 @@ class TimeoutDeltaProvider {
     ['LTC', 2.5],
     ['ETH', 0.25],
     ['RBTC', 0.5],
+    ['CELO', 0.1], // 5-6 seconds
   ]);
 
   private timeoutDeltas = new Map<string, PairTimeoutBlockDeltas>();
