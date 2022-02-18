@@ -63,10 +63,12 @@ class DataAggregator {
     this.exchanges.forEach(exchange => promises.push(exchange.getPrice(baseAsset, quoteAsset)));
 
     const results = await Promise.all(promises.map(promise => promise.catch(error => error)));
+    // console.log('dataaggregator.66 results ', results);
 
     // Filter all results that are not numeric (failed requests)
     const validResults: number[] = results.filter(result => !isNaN(Number(result)));
     validResults.sort((a, b) => a - b);
+    console.log('dataaggregator.71 validResults ', validResults);
 
     const middle = (validResults.length - 1) / 2;
 

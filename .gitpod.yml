@@ -20,7 +20,7 @@ tasks:
       echo 'web3.eth.defaultAccount = eth.accounts[0]'
       echo 'loadScript("/workspace/lnsovbridge/etherswap.js")'
       echo 'loadScript("/workspace/lnsovbridge/erc20swap.js")'
-      geth attach http://127.0.0.1:4444/
+    # geth attach http://127.0.0.1:4444/
 
     # sudo apt install rsync --assume-yes
     # sudo add-apt-repository -y ppa:ethereum/ethereum
