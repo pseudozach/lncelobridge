@@ -7,7 +7,7 @@ class CoinbasePro implements Exchange {
     if(baseAsset === 'CELO' && quoteAsset === 'BTC') {
       const response1 = await makeRequest(`${CoinbasePro.API}/products/CGLD-USD/ticker`);
       const response2 = await makeRequest(`${CoinbasePro.API}/products/BTC-USD/ticker`);
-      console.log('coinbase returning ', response1.price/response2.price)
+      // console.log('coinbase returning ', response1.price/response2.price)
       return Number(parseFloat(response1.price)/parseFloat(response2.price));
     } else {
       const response = await makeRequest(`${CoinbasePro.API}/products/${baseAsset}-${quoteAsset}/ticker`);

@@ -4,7 +4,7 @@ class Binance implements Exchange {
   private static readonly API = 'https://api.binance.com/api/v3';
 
   public async getPrice(baseAsset: string, quoteAsset: string): Promise<number> {
-    console.log('binance getPrice ', baseAsset, quoteAsset);
+    // console.log('binance getPrice ', baseAsset, quoteAsset);
     // quoteAsset = quoteAsset ? 'USD' : 'USDT'
     if (baseAsset === 'CELO' && quoteAsset === 'BTC') {
       // get btcusdt and celousdt and divide
