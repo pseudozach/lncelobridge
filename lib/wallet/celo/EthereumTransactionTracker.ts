@@ -55,7 +55,7 @@ class EthereumTransactionTracker {
       // const block = await this.provider.getBlockWithTransactions(blockNumber);
       const block = await this.localProvider.getBlockWithTransactions(blockNumber);
 
-      if(block.transactions.length > 0) {
+      if(block && block.transactions.length > 0) {
         for (const transaction of block.transactions) {
           if (transaction.from === this.walletAddress) {
             const confirmedTransactions = await this.pendingEthereumTransactionRepository.findByNonce(transaction.nonce);
