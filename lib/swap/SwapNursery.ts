@@ -16,6 +16,7 @@ import LndClient from '../lightning/LndClient';
 import ChainClient from '../chain/ChainClient';
 import EthereumNursery from './EthereumNursery';
 import RskNursery from './RskNursery';
+import CeloNursery from './CeloNursery';
 import RateProvider from '../rates/RateProvider';
 import SwapRepository from '../db/SwapRepository';
 import LightningNursery from './LightningNursery';
@@ -25,6 +26,7 @@ import ChannelCreation from '../db/models/ChannelCreation';
 import ReverseSwapRepository from '../db/ReverseSwapRepository';
 import ContractHandler from '../wallet/ethereum/ContractHandler';
 import RskContractHandler from '../wallet/rsk/ContractHandler';
+import CeloContractHandler from '../wallet/celo/ContractHandler';
 import WalletManager, { Currency } from '../wallet/WalletManager';
 import { ERC20SwapValues, EtherSwapValues } from '../consts/Types';
 import ChannelCreationRepository from '../db/ChannelCreationRepository';
@@ -46,6 +48,7 @@ import {
   splitPairId,
 } from '../Utils';
 import InvoiceState = Invoice.InvoiceState;
+
 
 interface SwapNursery {
   // UTXO based chains emit the "Transaction" object and Ethereum based ones just the transaction hash
@@ -107,6 +110,7 @@ class SwapNursery extends EventEmitter {
 
   private readonly ethereumNursery?: EthereumNursery;
   private readonly rskNursery?: RskNursery;
+  private readonly celoNursery?: CeloNursery;
 
   // Maps
   private currencies = new Map<string, Currency>();
@@ -168,6 +172,15 @@ class SwapNursery extends EventEmitter {
       );
     }    
 
+    if (this.walletManager.celoManager) {
+      this.celoNursery = new CeloNursery(
+        this.logger,
+        this.walletManager,
+        this.swapRepository,
+        this.reverseSwapRepository,
+      );
+    }    
+
     this.channelNursery = new ChannelNursery(
       this.logger,
       this.swapRepository,
@@ -189,6 +202,10 @@ class SwapNursery extends EventEmitter {
     if (this.rskNursery) {
       // this.logger.error("swapnursery this.listenRskNursery");
       await this.listenRskNursery(this.rskNursery!);
+    }
+
+    if (this.celoNursery) {
+      await this.listenCeloNursery(this.celoNursery!);
     }
 
     // Swap events
@@ -599,6 +616,86 @@ class SwapNursery extends EventEmitter {
     await rskNursery.init();
   }
 
+  private listenCeloNursery = async (celoNursery: CeloNursery) => {
+    const contractHandler = this.walletManager.celoManager!.contractHandler;
+
+    // Swap events
+    celoNursery.on('swap.expired', async (swap) => {
+      this.logger.verbose("celoNursery swap.expired ");
+      await this.lock.acquire(SwapNursery.swapLock, async () => {
+        await this.expireSwap(swap);
+      });
+    });
+
+    celoNursery.on('lockup.failed', async (swap, reason) => {
+      await this.lock.acquire(SwapNursery.swapLock, async () => {
+        await this.lockupFailed(swap, reason);
+      });
+    });
+
+    celoNursery.on('eth.lockup', async (swap, transactionHash, etherSwapValues) => {
+      this.logger.verbose("listenceloNursery eth.lockup txhash: " + transactionHash);
+      await this.lock.acquire(SwapNursery.swapLock, async () => {
+        this.emit('transaction', swap, transactionHash, true, false);
+
+        if (swap.invoice) {
+          await this.claimCelo(contractHandler, swap, etherSwapValues);
+        } else {
+          await this.setSwapRate(swap);
+        }
+      });
+    });
+
+    celoNursery.on('erc20.lockup', async (swap, transactionHash, erc20SwapValues) => {
+      await this.lock.acquire(SwapNursery.swapLock, async () => {
+        this.emit('transaction', swap, transactionHash, true, false);
+
+        if (swap.invoice) {
+          await this.claimCeloERC20(contractHandler, swap, erc20SwapValues);
+        } else {
+          await this.setSwapRate(swap);
+        }
+      });
+    });
+
+    // Reverse Swap events
+    celoNursery.on('reverseSwap.expired', async (reverseSwap) => {
+      await this.lock.acquire(SwapNursery.reverseSwapLock, async () => {
+        await this.expireReverseSwap(reverseSwap);
+      });
+    });
+
+    celoNursery.on('lockup.failedToSend', async (reverseSwap: ReverseSwap, reason ) => {
+      await this.lock.acquire(SwapNursery.reverseSwapLock, async () => {
+        const { base, quote } = splitPairId(reverseSwap.pair);
+        const chainSymbol = getChainCurrency(base, quote, reverseSwap.orderSide, true);
+        const lightningSymbol = getLightningCurrency(base, quote, reverseSwap.orderSide, true);
+
+        await this.handleReverseSwapSendFailed(
+          reverseSwap,
+          chainSymbol,
+          this.currencies.get(lightningSymbol)!.lndClient!,
+          reason);
+      });
+    });
+
+    celoNursery.on('lockup.confirmed', async (reverseSwap, transactionHash) => {
+      this.logger.verbose("listenceloNursery lockup.confirmed: " + transactionHash);
+      await this.lock.acquire(SwapNursery.reverseSwapLock, async () => {
+        this.emit('transaction', reverseSwap, transactionHash, true, true);
+      });
+    });
+
+    celoNursery.on('claim', async (reverseSwap, preimage) => {
+      this.logger.verbose("listenceloNursery claim: "+ preimage);
+      await this.lock.acquire(SwapNursery.reverseSwapLock, async () => {
+        await this.settleReverseSwapInvoice(reverseSwap, preimage);
+      });
+    });
+
+    await celoNursery.init();
+  }
+
   /**
    * Sets the rate for a Swap that doesn't have an invoice yet
    */
@@ -965,6 +1062,65 @@ class SwapNursery extends EventEmitter {
   }
 
   private claimRskERC20 = async (contractHandler: RskContractHandler, swap: Swap, erc20SwapValues: ERC20SwapValues, outgoingChannelId?: string) => {
+    const channelCreation = await this.channelCreationRepository.getChannelCreation({
+      swapId: {
+        [Op.eq]: swap.id,
+      },
+    });
+    const preimage = await this.paySwapInvoice(swap, channelCreation, outgoingChannelId);
+
+    if (!preimage) {
+      return;
+    }
+
+    const { base, quote } = splitPairId(swap.pair);
+    const chainCurrency = getChainCurrency(base, quote, swap.orderSide, false);
+
+    const wallet = this.walletManager.wallets.get(chainCurrency)!;
+
+    const contractTransaction = await contractHandler.claimToken(
+      wallet.walletProvider as ERC20WalletProvider,
+      preimage,
+      erc20SwapValues.amount,
+      erc20SwapValues.refundAddress,
+      erc20SwapValues.timelock,
+    );
+
+    this.logger.info(`Claimed ${chainCurrency} of Swap ${swap.id} in: ${contractTransaction.hash}`);
+    this.emit('claim', await this.swapRepository.setMinerFee(swap, calculateRskTransactionFee(contractTransaction)), channelCreation || undefined);
+  }
+
+  private claimCelo = async (contractHandler: CeloContractHandler, swap: Swap, etherSwapValues: EtherSwapValues, outgoingChannelId?: string) => {
+    this.logger.verbose(`claimCelo triggered with swap, etherSwapValues` + JSON.stringify(swap) + "\n" + JSON.stringify(etherSwapValues));
+    const channelCreation = await this.channelCreationRepository.getChannelCreation({
+      swapId: {
+        [Op.eq]: swap.id,
+      },
+    });
+    const preimage = await this.paySwapInvoice(swap, channelCreation, outgoingChannelId);
+
+    if (!preimage) {
+      return;
+    }
+
+    this.logger.debug(`claimCelo with params ${getHexString(preimage)}, ${etherSwapValues.amount}, ${etherSwapValues.refundAddress}, ${etherSwapValues.timelock}`);
+    let contractTransaction;
+    try {
+      contractTransaction = await contractHandler.claimEther(
+        preimage,
+        etherSwapValues.amount,
+        etherSwapValues.refundAddress,
+        etherSwapValues.timelock,
+      );
+
+      this.logger.info(`Claimed Celo of Swap ${swap.id} in: ${contractTransaction.hash}`);
+      this.emit('claim', await this.swapRepository.setMinerFee(swap, calculateRskTransactionFee(contractTransaction)), channelCreation || undefined);
+    } catch (e) {
+      this.logger.error(`claimCelo error ${e}`);    
+    }
+  }
+
+  private claimCeloERC20 = async (contractHandler: CeloContractHandler, swap: Swap, erc20SwapValues: ERC20SwapValues, outgoingChannelId?: string) => {
     const channelCreation = await this.channelCreationRepository.getChannelCreation({
       swapId: {
         [Op.eq]: swap.id,
