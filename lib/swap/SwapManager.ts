@@ -652,22 +652,25 @@ class SwapManager {
   }
 
   private getLockupContractAddress = (type: CurrencyType, quoteCurrency: string): string => {
-    this.logger.verbose("getLockupContractAddress CurrencyType: " + type)
+    this.logger.verbose("getLockupContractAddress CurrencyType: " + type + quoteCurrency);
     const ethereumManager = this.walletManager.ethereumManager!;
     const rskManager = this.walletManager.rskManager!;
+    const celoManager = this.walletManager.celoManager!;
 
     let addresstoreturn: string;
     if (type === CurrencyType.Ether) {
       addresstoreturn = ethereumManager.etherSwap.address
     } else if (type === CurrencyType.Rbtc) {
       addresstoreturn = rskManager.etherSwap.address
+    } else if (type === CurrencyType.Celo) {
+      addresstoreturn = celoManager.etherSwap.address
     } else {
-      if (quoteCurrency == "SOV") {
-        this.logger.error("getlockupcontractaddress from rsk")
-        addresstoreturn = rskManager.erc20Swap.address
-      } else {
-        addresstoreturn = ethereumManager.erc20Swap.address
-      }
+      // if (quoteCurrency == "SOV") {
+      //   this.logger.error("getlockupcontractaddress from rsk")
+      //   addresstoreturn = rskManager.erc20Swap.address
+      // } else {
+      addresstoreturn = celoManager.erc20Swap.address
+      // }
       
     }
 
