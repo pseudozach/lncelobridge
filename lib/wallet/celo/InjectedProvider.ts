@@ -124,7 +124,7 @@ class InjectedProvider implements providers.Provider {
   }
 
   public estimateGas = (transaction: providers.TransactionRequest): Promise<BigNumber> => {
-    this.logger.error("eth estimategas tx: " + JSON.stringify(transaction));
+    this.logger.debug("celo estimategas tx: " + JSON.stringify(transaction));
     return this.forwardMethod('estimateGas', transaction);
   }
 
@@ -178,7 +178,7 @@ class InjectedProvider implements providers.Provider {
     addressOrName: string,
     blockTag?: providers.BlockTag,
   ): Promise<number> => {
-    this.logger.error("eth getTransactionCount tx: " + JSON.stringify(addressOrName));
+    this.logger.debug("eth getTransactionCount tx: " + JSON.stringify(addressOrName));
     return this.forwardMethod('getTransactionCount', addressOrName, blockTag);
   }
 
@@ -191,7 +191,7 @@ class InjectedProvider implements providers.Provider {
   }
 
   public resolveName = (name: string): Promise<string> => {
-    this.logger.error("celo resolveName tx: " + name);
+    this.logger.debug("celo resolveName tx: " + name);
     return this.forwardMethod('resolveName', name);
   }
 

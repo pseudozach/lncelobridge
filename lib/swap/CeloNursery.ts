@@ -118,7 +118,7 @@ class CeloNursery extends EventEmitter {
       transactionHash,
       etherSwapValues,
     ) => {
-      this.logger.verbose("CeloNursery listenEtherSwap eth.lockup enter");
+      this.logger.verbose("CeloNursery listenEtherSwap eth.lockup enter transactionHash: " + transactionHash);
       let swap = await this.swapRepository.getSwap({
         preimageHash: {
           [Op.eq]: getHexString(etherSwapValues.preimageHash),
@@ -132,13 +132,14 @@ class CeloNursery extends EventEmitter {
       });
 
       if (!swap) {
+        this.logger.error('swap not found preimagehash: ' + getHexString(etherSwapValues.preimageHash))
         return;
       }
 
       const { base, quote } = splitPairId(swap.pair);
       const chainCurrency = getChainCurrency(base, quote, swap.orderSide, false);
 
-      if (chainCurrency !== 'RBTC') {
+      if (chainCurrency !== 'CELO') {
         return;
       }
 
@@ -328,7 +329,7 @@ class CeloNursery extends EventEmitter {
       const wallet = this.getEthereumWallet(chainCurrency);
 
       if (wallet) {
-        this.emit('swap.expired', expirableSwap, wallet.symbol === 'RBTC');
+        this.emit('swap.expired', expirableSwap, wallet.symbol === 'CELO');
       }
     }
   }
@@ -343,7 +344,7 @@ class CeloNursery extends EventEmitter {
       const wallet = this.getEthereumWallet(chainCurrency);
 
       if (wallet) {
-        this.emit('reverseSwap.expired', expirableReverseSwap, wallet.symbol === 'RBTC');
+        this.emit('reverseSwap.expired', expirableReverseSwap, wallet.symbol === 'CELO');
       }
     }
   }
