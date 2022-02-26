@@ -46,7 +46,7 @@ tasks:
       cp boltz.gitpod.conf ~/.boltz/boltz.conf
       echo "sell result come lava vibrant raw decline town fence improve remain drift" > ~/.boltz/seed.dat
       echo alfajores celo - rpc url: https://alfajores-forno.celo-testnet.org, chainid: 44787
-      echo npm run dev
+      npm run dev
   # signer account: 0x8cfd0abc0ee83f5E006bD7929dF9FE6D6e6b72c2
   - init: |
       git clone https://github.com/pseudozach/lncelobridge-frontend.git /workspace/lncelobridge-frontend
@@ -54,7 +54,7 @@ tasks:
       gp env REACT_APP_BOLTZ_API=$REACT_APP_BOLTZ_API
       cd /workspace/lncelobridge-frontend && npm i
     command: |
-      echo npm run start  
+      npm run start  
 # List the ports to expose. Learn more https://www.gitpod.io/docs/config-ports/
 ports:
   - port: 9001
