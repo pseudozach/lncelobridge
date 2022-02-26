@@ -245,7 +245,7 @@ class RateProvider {
       }
       
       // minimalLimit = Math.max(minimalLimit, minimalLimitBaseTransactionFee, minimalLimitQuoteTransactionFee);
-
+      this.logger.info('rateprovider.248 maximal: '+ Math.floor(Math.min(quoteLimits.maximal, baseLimits.maximal * rate)));
       return {
         maximal: Math.floor(Math.min(quoteLimits.maximal, baseLimits.maximal * rate)),
         minimal: Math.ceil(minimalLimit),
