@@ -38,6 +38,7 @@ class InjectedProvider implements providers.Provider {
         // config.providerEndpoint,
         // new method to enable reconnection
         new Web3WsProvider(config.providerEndpoint, {
+          timeout: 4000, // ms
           clientConfig: {
               keepalive: true,
               keepaliveInterval: 60000, // ms
@@ -47,7 +48,7 @@ class InjectedProvider implements providers.Provider {
               auto: true,
               delay: 1000, // ms
               maxAttempts: 999,
-              onTimeout: false
+              onTimeout: false,
            }
         }),
       ));
@@ -173,7 +174,7 @@ class InjectedProvider implements providers.Provider {
   }
 
   public getLogs = (filter: providers.Filter): Promise<Array<providers.Log>> => {
-    this.logger.error("celo getLogs " + JSON.stringify(filter));
+    this.logger.verbose("celo getLogs " + JSON.stringify(filter));
     return this.forwardMethod('getLogs', filter);
   }
 

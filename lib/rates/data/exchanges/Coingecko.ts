@@ -5,8 +5,7 @@ class Coingecko implements Exchange {
   private static readonly API = 'https://api.coingecko.com/api/v3';
 
   public async getPrice(baseAsset: string, quoteAsset: string): Promise<number> {
-    // BTC SOV
-    // console.log("Coingecko getPrice baseAsset quoteAsset: ", baseAsset, quoteAsset);
+    console.log("Coingecko getPrice baseAsset quoteAsset: ", baseAsset, quoteAsset);
     // let longerquoteasset = this.longerName(quoteAsset);
     let lowerbaseasset = baseAsset.toLowerCase();
     const pair = `${this.longerName(baseAsset)}&vs_currencies=${quoteAsset}`;
