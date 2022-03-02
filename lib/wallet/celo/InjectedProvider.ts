@@ -14,6 +14,9 @@ enum EthProviderService {
   Websocket = 'WebSocket'
 }
 
+// to reconnect to forno - disconnects every 20 minutes
+const Web3WsProvider = require('web3-providers-ws');
+
 /**
  * This provider is a wrapper for the WebSocketProvider of ethers but it writes sent transactions to the database
  * and, depending on the configuration, falls back to Alchemy and Infura as Web3 provider
@@ -31,7 +34,23 @@ class InjectedProvider implements providers.Provider {
 
   constructor(private logger: Logger, config: EthereumConfig) {
     if (config.providerEndpoint) {
-      this.providers.set(EthProviderService.Websocket, new providers.WebSocketProvider(config.providerEndpoint));
+      this.providers.set(EthProviderService.Websocket, new providers.WebSocketProvider(
+        // config.providerEndpoint,
+        // new method to enable reconnection
+        new Web3WsProvider(config.providerEndpoint, {
+          clientConfig: {
+              keepalive: true,
+              keepaliveInterval: 60000, // ms
+           },
+           // Enable auto reconnection
+           reconnect: {
+              auto: true,
+              delay: 1000, // ms
+              maxAttempts: 999,
+              onTimeout: false
+           }
+        }),
+      ));
       this.logAddedProvider(EthProviderService.Websocket, { endpoint: config.providerEndpoint });
     } else {
       this.logDisabledProvider(EthProviderService.Websocket, 'no endpoint was specified');
