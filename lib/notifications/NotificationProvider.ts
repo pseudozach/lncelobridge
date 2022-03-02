@@ -68,7 +68,7 @@ class NotificationProvider {
     try {
       await this.discord.init();
 
-      await this.discord.sendMessage('Started Boltz instance');
+      await this.discord.sendMessage('Started LNCELOBridge instance');
       this.logger.verbose('Connected to Discord');
 
       for (const [, currency] of this.service.currencies) {
