@@ -215,9 +215,9 @@ class Config {
 
       api: {
         host: '0.0.0.0',
-        port: 9001,
-        sslKey: '/root/lnsovbridge/privkey.pem',
-        sslCert: '/root/lnsovbridge/fullchain.pem',
+        port: 443,
+        sslKey: '/etc/letsencrypt/live/api.bosphorus.exchange/privkey.pem',
+        sslCert: '/etc/letsencrypt/live/api.bosphorus.exchange/fullchain.pem',
         sslEnabled: true,
       },
 
