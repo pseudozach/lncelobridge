@@ -238,16 +238,17 @@ class RateProvider {
       this.logger.info("getLimits minimalLimitQuoteTransactionFee " + minimalLimitQuoteTransactionFee);
       this.logger.info("getLimits minimalLimitBaseTransactionFee " + minimalLimitBaseTransactionFee);
 
-      if(base === "SOV" || quote === "SOV"){
+      if(base === "CUSD" || quote === "CUSD"){
         minimalLimit = Math.max(minimalLimit, 0, minimalLimitQuoteTransactionFee);
       } else {
         minimalLimit = Math.max(minimalLimit, minimalLimitBaseTransactionFee, minimalLimitQuoteTransactionFee);
       }
       
       // minimalLimit = Math.max(minimalLimit, minimalLimitBaseTransactionFee, minimalLimitQuoteTransactionFee);
-      this.logger.info('rateprovider.248 maximal: '+ Math.floor(Math.min(quoteLimits.maximal, baseLimits.maximal * rate)));
+      this.logger.info('rateprovider.248 baseLimits.maximal ' + baseLimits.maximal);
+      this.logger.info('rateprovider.249 maximal: '+ Math.floor(Math.min(quoteLimits.maximal, baseLimits.maximal / rate)));
       return {
-        maximal: Math.floor(Math.min(quoteLimits.maximal, baseLimits.maximal * rate)),
+        maximal: Math.floor(Math.min(quoteLimits.maximal, baseLimits.maximal / rate)),
         minimal: Math.ceil(minimalLimit),
 
         maximalZeroConf: {
