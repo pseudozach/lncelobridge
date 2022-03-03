@@ -14,8 +14,16 @@ enum EthProviderService {
   Websocket = 'WebSocket'
 }
 
+type KeepAliveParams = {
+  provider: providers.WebSocketProvider;
+  onDisconnect: (err: any) => void;
+  expectedPongBack?: number;
+  checkInterval?: number;
+};
+
 // to reconnect to forno - disconnects every 20 minutes
-const Web3WsProvider = require('web3-providers-ws');
+// const Web3WsProvider = require('web3-providers-ws');
+// import Web3 from 'web3';
 
 /**
  * This provider is a wrapper for the WebSocketProvider of ethers but it writes sent transactions to the database
@@ -32,26 +40,75 @@ class InjectedProvider implements providers.Provider {
 
   private static readonly requestTimeout = 5000;
 
+  private config: EthereumConfig;
+
   constructor(private logger: Logger, config: EthereumConfig) {
+    this.config = config;
     if (config.providerEndpoint) {
-      this.providers.set(EthProviderService.Websocket, new providers.WebSocketProvider(
-        // config.providerEndpoint,
-        // new method to enable reconnection
-        new Web3WsProvider(config.providerEndpoint, {
-          timeout: 4000, // ms
-          clientConfig: {
-              keepalive: true,
-              keepaliveInterval: 60000, // ms
-           },
-           // Enable auto reconnection
-           reconnect: {
-              auto: true,
-              delay: 1000, // ms
-              maxAttempts: 999,
-              onTimeout: false,
-           }
-        }),
-      ));
+
+      // web3 websocketprovider
+      // let provider = new Web3.providers.WebsocketProvider(config.providerEndpoint)
+
+      // Keeps track of the number of times we've retried to set up a new provider
+      // // and subs without a successful header
+      // let sequentialRetryCount = 0
+      
+      // const setupNewProviderAndSubs = async () => {
+      //     // To prevent us from retrying too aggressively, wait a little if
+      //     // we try setting up multiple times in a row
+      //     const sleepTimeMs = sequentialRetryCount * 100
+      //     console.log('sleeping', sleepTimeMs)
+      //     await sleep(sleepTimeMs)
+      //     sequentialRetryCount++
+      //     // To avoid a situation where multiple error events are triggered
+      //     if (!setupNewProvider) {
+      //         setupNewProvider = true
+      //         setupProviderAndSubscriptions()
+      //     }
+      // }
+      
+      // // new method to enable reconnection - doesnt work with forno
+      // const wsprovider = new Web3WsProvider(config.providerEndpoint, {
+      //   timeout: 4000, // ms
+      //   clientConfig: {
+      //       keepalive: true,
+      //       keepaliveInterval: 60000, // ms
+      //     },
+      //     // Enable auto reconnection
+      //     reconnect: {
+      //       auto: true,
+      //       delay: 1000, // ms
+      //       maxAttempts: 999,
+      //       onTimeout: false,
+      //     }
+      // });
+
+      // wsprovider.on('error', async () => {
+      //     console.log('WebsocketProvider encountered an error');
+      //     // await setupNewProviderAndSubs()
+      // })
+      
+      // wsprovider.on('end', async () => {
+      //     console.log('WebsocketProvider has ended, will restart')
+      //     // await setupNewProviderAndSubs()
+      // })
+
+      // const wrappedProvider = new providers.WebSocketProvider(wsprovider);
+      
+      const ethersProvider = new providers.WebSocketProvider(
+        config.providerEndpoint,
+      );
+
+      this.providers.set(EthProviderService.Websocket, 
+        ethersProvider
+      );
+      // this.keepAlive({
+      //   ethersProvider,
+      //   onDisconnect: (err) => {
+      //     startBot();
+      //     console.error('The ws connection was closed', JSON.stringify(err, null, 2));
+      //   },
+      // });
       this.logAddedProvider(EthProviderService.Websocket, { endpoint: config.providerEndpoint });
     } else {
       this.logDisabledProvider(EthProviderService.Websocket, 'no endpoint was specified');
@@ -381,6 +438,16 @@ class InjectedProvider implements providers.Provider {
 
         this.logger.warn(`Request to ${providerName} Web3 provider failed: ${method}: ${formattedError}`);
         errors.push(formattedError);
+
+        // reconnect websocket manually?
+        this.logger.verbose('injectedprovider.443 resetting ethersProvider');
+        const ethersProvider = new providers.WebSocketProvider(
+          this.config.providerEndpoint,
+        );
+  
+        this.providers.set(EthProviderService.Websocket, 
+          ethersProvider
+        );
       }
     }
 
@@ -430,6 +497,53 @@ class InjectedProvider implements providers.Provider {
   private logDisabledProvider = (name: string, reason: string) => {
     this.logger.warn(`Disabled ${name} Web3 provider: ${reason}`);
   }
+  
+  private keepAlive = ({
+    provider,
+    onDisconnect,
+    expectedPongBack = 15000,
+    checkInterval = 7500,
+  }: KeepAliveParams) => {
+    let pingTimeout: NodeJS.Timeout | null = null;
+    let keepAliveInterval: NodeJS.Timeout | null = null;
+  
+    provider._websocket.on('open', () => {
+      keepAliveInterval = setInterval(() => {
+        provider._websocket.ping();
+  
+        // Use `WebSocket#terminate()`, which immediately destroys the connection,
+        // instead of `WebSocket#close()`, which waits for the close timer.
+        // Delay should be equal to the interval at which your server
+        // sends out pings plus a conservative assumption of the latency.
+        pingTimeout = setTimeout(() => {
+          provider._websocket.terminate();
+        }, expectedPongBack);
+      }, checkInterval);
+    });
+  
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    provider._websocket.on('close', (err: any) => {
+      if (keepAliveInterval) clearInterval(keepAliveInterval);
+      if (pingTimeout) clearTimeout(pingTimeout);
+      onDisconnect(err);
+    });
+  
+    provider._websocket.on('pong', () => {
+      if (pingTimeout) clearInterval(pingTimeout);
+    });
+  };
+
+  private startBot = (wsUrl: string) => {
+    const provider = new providers.WebSocketProvider(wsUrl);
+    this.keepAlive({
+        provider,
+        onDisconnect: (err) => {
+          this.startBot(wsUrl);
+          console.error('The ws connection was closed', JSON.stringify(err, null, 2));
+        },
+      });
+  };
+
 }
 
 export default InjectedProvider;
