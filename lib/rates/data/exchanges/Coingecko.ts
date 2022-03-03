@@ -8,12 +8,22 @@ class Coingecko implements Exchange {
     console.log("Coingecko getPrice baseAsset quoteAsset: ", baseAsset, quoteAsset);
     // let longerquoteasset = this.longerName(quoteAsset);
     let lowerbaseasset = baseAsset.toLowerCase();
-    const pair = `${this.longerName(baseAsset)}&vs_currencies=${quoteAsset}`;
+    let pair = `${this.longerName(baseAsset)}&vs_currencies=${quoteAsset}`;
+    // need to cover BTC CUSD
+    if(baseAsset === 'BTC' && quoteAsset === 'CUSD') {
+      lowerbaseasset = this.longerName(quoteAsset);
+      pair = `${this.longerName(quoteAsset)}&vs_currencies=${baseAsset.toLowerCase()}`;
+    }
+
     // console.log("querying pair: ", pair);
     const response = await makeRequest(`${Coingecko.API}/simple/price?ids=${pair}`);
     // console.log("response: ", response, response[lowerbaseasset]);
-    const lastprice = response[lowerbaseasset][quoteAsset.toLowerCase()];
+    let lastprice = response[lowerbaseasset][quoteAsset.toLowerCase()];
     // console.log("coingecko lastprice: ", lastprice);
+    if(baseAsset === 'BTC' && quoteAsset === 'CUSD') {
+      lastprice = response[lowerbaseasset][baseAsset.toLowerCase()];
+      return Number(1/lastprice);
+    }
     return Number(lastprice);
 
     // const lastTrade = (Object.values(response['result'])[0] as Record<string, string[]>)['c'];
