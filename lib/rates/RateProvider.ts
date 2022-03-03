@@ -165,7 +165,7 @@ class RateProvider {
     // "null" on the very first run of this function
     // this.logger.info('rateprovider.166');
     const updatedRates = await this.dataAggregator.fetchPairs();
-    this.logger.info('rateprovider.168 ' + stringify(updatedRates));
+    // this.logger.info('rateprovider.168 ' + stringify(updatedRates));
     await this.updateMinerFees();
 
     for (const [pairId, rate] of updatedRates) {
@@ -230,13 +230,13 @@ class RateProvider {
 
     if (baseLimits && quoteLimits) {
       let minimalLimit = Math.max(quoteLimits.minimal, baseLimits.minimal * rate);
-      this.logger.info("getLimits minimalLimit " + pair + ", " + minimalLimit);
+      // this.logger.info("getLimits minimalLimit " + pair + ", " + minimalLimit);
 
       // Make sure the minimal limit is at least 4 times the fee needed to claim
       const minimalLimitQuoteTransactionFee = this.feeProvider.getBaseFee(quote, BaseFeeType.NormalClaim) * 4;
       const minimalLimitBaseTransactionFee = this.feeProvider.getBaseFee(base, BaseFeeType.NormalClaim) * rate * 4;
-      this.logger.info("getLimits minimalLimitQuoteTransactionFee " + minimalLimitQuoteTransactionFee);
-      this.logger.info("getLimits minimalLimitBaseTransactionFee " + minimalLimitBaseTransactionFee);
+      // this.logger.info("getLimits minimalLimitQuoteTransactionFee " + minimalLimitQuoteTransactionFee);
+      // this.logger.info("getLimits minimalLimitBaseTransactionFee " + minimalLimitBaseTransactionFee);
 
       if(base === "CUSD" || quote === "CUSD"){
         minimalLimit = Math.max(minimalLimit, 0, minimalLimitQuoteTransactionFee);
@@ -245,7 +245,7 @@ class RateProvider {
       }
       
       // minimalLimit = Math.max(minimalLimit, minimalLimitBaseTransactionFee, minimalLimitQuoteTransactionFee);
-      this.logger.info('rateprovider.248 baseLimits.maximal ' + baseLimits.maximal);
+      // this.logger.info('rateprovider.248 baseLimits.maximal ' + baseLimits.maximal);
       this.logger.info('rateprovider.249 maximal: '+ Math.floor(Math.min(quoteLimits.maximal, baseLimits.maximal / rate)));
       return {
         maximal: Math.floor(Math.min(quoteLimits.maximal, baseLimits.maximal / rate)),
