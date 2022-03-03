@@ -196,7 +196,7 @@ class InjectedProvider implements providers.Provider {
     transaction: utils.Deferrable<providers.TransactionRequest>,
     blockTag?: providers.BlockTag,
   ): Promise<string> => {
-    this.logger.error("eth call tx: " + JSON.stringify(transaction));
+    this.logger.verbose("celo call tx: " + JSON.stringify(transaction));
     return this.forwardMethod('call', transaction, blockTag);
   }
 

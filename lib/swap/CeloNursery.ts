@@ -359,7 +359,7 @@ class CeloNursery extends EventEmitter {
       return;
     }
 
-    if (wallet.type === CurrencyType.Rbtc || wallet.type === CurrencyType.ERC20) {
+    if (wallet.type === CurrencyType.Celo || wallet.type === CurrencyType.ERC20) {
       // this.logger.error("getEthereumWallet returning valid wallet");
       return wallet;
     }
