@@ -233,22 +233,26 @@ class RateProvider {
       // this.logger.info("getLimits minimalLimit " + pair + ", " + minimalLimit);
 
       // Make sure the minimal limit is at least 4 times the fee needed to claim
-      const minimalLimitQuoteTransactionFee = this.feeProvider.getBaseFee(quote, BaseFeeType.NormalClaim) * 4;
+      const minimalLimitQuoteTransactionFee = (this.feeProvider.getBaseFee(quote, BaseFeeType.NormalClaim) * 4) || 0;
       const minimalLimitBaseTransactionFee = this.feeProvider.getBaseFee(base, BaseFeeType.NormalClaim) * rate * 4;
       // this.logger.info("getLimits minimalLimitQuoteTransactionFee " + minimalLimitQuoteTransactionFee);
       // this.logger.info("getLimits minimalLimitBaseTransactionFee " + minimalLimitBaseTransactionFee);
 
+      let maximalLimit = Math.floor(Math.min(quoteLimits.maximal, baseLimits.maximal / rate));
       if(base === "CUSD" || quote === "CUSD"){
-        minimalLimit = Math.max(minimalLimit, 0, minimalLimitQuoteTransactionFee);
+        // this.logger.info(`rateprovider.243 ${minimalLimit} ${minimalLimitQuoteTransactionFee}`);
+        minimalLimit = Math.max(minimalLimit, 10000, minimalLimitQuoteTransactionFee);
+        // this.logger.info(`rateprovider.244 ${quoteLimits.maximal} ${baseLimits.maximal} ${rate} ${1/rate}`);
+        maximalLimit = Math.floor(Math.min(quoteLimits.maximal, baseLimits.maximal / (1/rate)));
       } else {
         minimalLimit = Math.max(minimalLimit, minimalLimitBaseTransactionFee, minimalLimitQuoteTransactionFee);
       }
       
       // minimalLimit = Math.max(minimalLimit, minimalLimitBaseTransactionFee, minimalLimitQuoteTransactionFee);
       // this.logger.info('rateprovider.248 baseLimits.maximal ' + baseLimits.maximal);
-      this.logger.info('rateprovider.249 maximal: '+ Math.floor(Math.min(quoteLimits.maximal, baseLimits.maximal / rate)));
+      // this.logger.info('rateprovider.249 maximalLimit: '+ maximalLimit);
       return {
-        maximal: Math.floor(Math.min(quoteLimits.maximal, baseLimits.maximal / rate)),
+        maximal: maximalLimit,
         minimal: Math.ceil(minimalLimit),
 
         maximalZeroConf: {
