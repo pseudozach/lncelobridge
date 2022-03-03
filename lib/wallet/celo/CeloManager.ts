@@ -5,7 +5,7 @@ import { ERC20Swap } from 'boltz-core/typechain/ERC20Swap';
 import { constants, Contract, utils, Wallet as EthersWallet } from 'ethers';
 // import { CeloProvider } from '@celo-tools/celo-ethers-wrapper'
 // import { CeloWallet } from '@celo-tools/celo-ethers-wrapper'
-import GasNow from './GasNow';
+// import GasNow from './GasNow';
 import Errors from '../Errors';
 import Wallet from '../Wallet';
 import Logger from '../../Logger';
@@ -110,10 +110,11 @@ class CeloManager {
       blockNumber: currentBlock,
     })}`);
 
-    await new GasNow(
-      this.logger,
-      await this.provider.getNetwork(),
-    ).init();
+    // await new GasNow(
+    //   this.logger,
+    //   await this.provider.getNetwork(),
+    // ).init();
+
     const transactionTracker = await new EthereumTransactionTracker(
       this.logger,
       // this.provider, // removed - using localProvider for celo
@@ -130,6 +131,13 @@ class CeloManager {
         transactionTracker.scanBlock(blockNumber),
       ]);
     });
+
+    // this.provider.on('error', async (event) => {
+    //   this.logger.error('celomanager.136 error event ' + stringify(event));
+    // });
+    // this.provider.on('end', async (event) => {
+    //   this.logger.error('celonursery.139 end event ' + stringify(event));
+    // });
 
     const wallets = new Map<string, Wallet>();
 
