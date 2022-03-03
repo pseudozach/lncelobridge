@@ -945,6 +945,7 @@ class Service {
         break;
 
       case CurrencyType.Ether:
+      case CurrencyType.Celo:
       case CurrencyType.ERC20:
         if (args.claimAddress === undefined) {
           throw ApiErrors.UNDEFINED_PARAMETER('claimAddress');
