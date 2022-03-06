@@ -80,7 +80,7 @@ class NotificationProvider {
 
       const check = async () => {
         await Promise.all([
-          this.checkConnections(),
+          // this.checkConnections(),
           this.balanceChecker.check(),
           this.diskUsageChecker.checkUsage(),
         ]);
