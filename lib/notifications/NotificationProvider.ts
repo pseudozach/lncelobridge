@@ -9,7 +9,7 @@ import ReverseSwap from '../db/models/ReverseSwap';
 import BackupScheduler from '../backup/BackupScheduler';
 import { CurrencyType, OrderSide } from '../consts/Enums';
 import { satoshisToCoins } from '../DenominationConverter';
-import { ChainInfo, CurrencyInfo, LndInfo } from '../proto/boltzrpc_pb';
+// import { ChainInfo, CurrencyInfo, LndInfo } from '../proto/boltzrpc_pb';
 import { CurrencyConfig, NotificationConfig, TokenConfig } from '../Config';
 import {
   splitPairId,
@@ -102,30 +102,30 @@ class NotificationProvider {
     clearInterval(this.timer);
   }
 
-  private checkConnections = async () => {
-    const info = await this.service.getInfo();
+  // private checkConnections = async () => {
+  //   const info = await this.service.getInfo();
 
-    const promises: Promise<any>[] = [];
+  //   const promises: Promise<any>[] = [];
 
-    info.getChainsMap().forEach((currency: CurrencyInfo, symbol: string) => {
-      promises.push(this.checkConnection(`LND ${symbol}`, currency.getLnd()));
-      promises.push(this.checkConnection(`${symbol} node`, currency.getChain()));
-    });
+  //   info.getChainsMap().forEach((currency: CurrencyInfo, symbol: string) => {
+  //     promises.push(this.checkConnection(`LND ${symbol}`, currency.getLnd()));
+  //     promises.push(this.checkConnection(`${symbol} node`, currency.getChain()));
+  //   });
 
-    await Promise.all(promises);
-  }
+  //   await Promise.all(promises);
+  // }
 
-  private checkConnection = async (service: string, object: ChainInfo | LndInfo | undefined) => {
-    if (object !== undefined) {
-      if (object.getError() === '') {
-        await this.sendReconnected(service);
+  // private checkConnection = async (service: string, object: ChainInfo | LndInfo | undefined) => {
+  //   if (object !== undefined) {
+  //     if (object.getError() === '') {
+  //       await this.sendReconnected(service);
 
-        return;
-      }
-    }
+  //       return;
+  //     }
+  //   }
 
-    await this.sendLostConnection(service);
-  }
+  //   await this.sendLostConnection(service);
+  // }
 
   private listenToDiscord = () => {
     this.discord.on('error', (error) => {
