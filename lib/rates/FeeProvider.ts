@@ -171,10 +171,12 @@ class FeeProvider {
         break;
       }
 
+      // case 'CUSD':
       case 'CELO': {
         const relativeFee = feeMap.get(chainCurrency)!;
         const claimCost = this.calculateEtherGasCost(relativeFee, FeeProvider.gasUsage.EtherSwap.claim);
 
+        this.logger.verbose(`feeprovider.175 CELO calculateEtherGasCost ${chainCurrency} ${relativeFee} ${claimCost}`);
         this.minerFees.set(chainCurrency, {
           normal: claimCost,
           reverse: {
@@ -188,8 +190,11 @@ class FeeProvider {
 
       // If it is not BTC, LTC or ETH, it is an ERC20 token
       default: {
+        
         const relativeFee = feeMap.get('ETH')!;
+        console.log('feemaps: ', feeMap.get('ETH')!, feeMap.get('CELO')!);
         const rate = this.dataAggregator.latestRates.get(getPairId({ base: 'ETH', quote: chainCurrency }))!;
+        console.log('rates: ', rate, this.dataAggregator.latestRates.get(getPairId({ base: 'CELO', quote: chainCurrency }))!);
 
         const claimCost = this.calculateTokenGasCosts(
           rate,
@@ -197,6 +202,7 @@ class FeeProvider {
           FeeProvider.gasUsage.ERC20Swap.claim,
         );
 
+        this.logger.verbose(`feeprovider.196 calculateTokenGasCosts ${chainCurrency} ${rate} ${relativeFee} ${claimCost}`);
         this.minerFees.set(chainCurrency, {
           normal: claimCost,
           reverse: {

@@ -49,6 +49,7 @@ import {
   getVersion,
   reverseBuffer,
   splitPairId,
+  stringify,
 } from '../Utils';
 
 type LndNodeInfo = {
@@ -783,6 +784,17 @@ class Service {
       return {};
     }
 
+    this.logger.verbose('service.786 setSwapInvoice returning: ' + stringify({
+      expectedAmount,
+      acceptZeroConf,
+      bip21: encodeBip21(
+        chainCurrency,
+        swap.lockupAddress,
+        expectedAmount,
+        getSwapMemo(lightningCurrency, false),
+      ),
+    }));
+    
     return {
       expectedAmount,
       acceptZeroConf,
@@ -993,11 +1005,13 @@ class Service {
       holdInvoiceAmount = args.invoiceAmount;
 
       onchainAmount = args.invoiceAmount * rate;
-
+      // this.logger.verbose(`service.996 onchainAmount ${onchainAmount}`);
       percentageFee = Math.ceil(feePercent * onchainAmount);
 
-      onchainAmount -= percentageFee + baseFee;
+      onchainAmount -= percentageFee + (baseFee || 0);
+      // this.logger.verbose(`service.1000 onchainAmount ${onchainAmount}`);
       onchainAmount = Math.floor(onchainAmount);
+      this.logger.verbose(`service.1001 invoiceAmount, rate, feePercent, percentageFee, baseFee, onchainAmount : ${args.invoiceAmount}, ${rate}, ${feePercent}, ${percentageFee}, ${baseFee}, ${onchainAmount} `);
     } else if (args.onchainAmount !== undefined) {
       invoiceAmountDefined = false;
 
@@ -1012,7 +1026,8 @@ class Service {
     } else {
       throw Errors.NO_AMOUNT_SPECIFIED();
     }
-
+    this.logger.verbose('service.1015 final onchainamount: ' + onchainAmount);
+    
     this.verifyAmount(args.pairId, rate, holdInvoiceAmount, side, true);
 
     let prepayMinerFeeInvoiceAmount: number | undefined = undefined;
