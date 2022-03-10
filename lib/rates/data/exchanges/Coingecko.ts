@@ -14,7 +14,11 @@ class Coingecko implements Exchange {
       lowerbaseasset = this.longerName(quoteAsset);
       pair = `${this.longerName(quoteAsset)}&vs_currencies=${baseAsset.toLowerCase()}`;
     }
-
+    if(baseAsset === 'CELO' && quoteAsset === 'CUSD') {
+      lowerbaseasset = baseAsset.toLowerCase();
+      quoteAsset = "usd";
+      pair = `${this.longerName(baseAsset)}&vs_currencies=${quoteAsset}`;
+    }
     // console.log("querying pair: ", pair);
     const response = await makeRequest(`${Coingecko.API}/simple/price?ids=${pair}`);
     // console.log("response: ", response, response[lowerbaseasset]);

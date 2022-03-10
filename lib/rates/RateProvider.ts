@@ -116,7 +116,7 @@ class RateProvider {
         // TODO: find way to get ETH/<token> rate without having to hardcode it here
         const checkAndRegisterToken = (symbol: string) => {
           if (this.currencies.get(symbol)!.type === CurrencyType.ERC20) {
-            this.dataAggregator.registerPair('ETH', symbol);
+            this.dataAggregator.registerPair('CELO', symbol);
           }
         };
 
