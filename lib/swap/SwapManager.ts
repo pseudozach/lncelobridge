@@ -34,6 +34,7 @@ import {
   getUnixTime,
   reverseBuffer,
   splitPairId,
+  stringify,
 } from '../Utils';
 
 type ChannelCreationInfo = {
@@ -521,9 +522,9 @@ class SwapManager {
       refundAddress = await this.walletManager.wallets.get(sendingCurrency.symbol)!.getAddress();
       refundAddress = refundAddress.toLowerCase();
 
-      this.logger.error("prepared reverse swap stuff: " + blockNumber + ", " + lockupAddress + ", " + refundAddress);
+      this.logger.verbose("prepared reverse swap stuff: " + blockNumber + ", " + lockupAddress + ", " + refundAddress);
 
-      await this.reverseSwapRepository.addReverseSwap({
+      this.logger.verbose("swapmanager.527 adding reverse swap: " + stringify({
         id,
         pair,
         lockupAddress,
@@ -539,7 +540,30 @@ class SwapManager {
         preimageHash: getHexString(args.preimageHash),
         minerFeeInvoicePreimage: minerFeeInvoicePreimage,
         minerFeeOnchainAmount: args.prepayMinerFeeOnchainAmount,
-      });
+      }));
+
+      // try {
+        await this.reverseSwapRepository.addReverseSwap({
+          id,
+          pair,
+          lockupAddress,
+          minerFeeInvoice,
+          timeoutBlockHeight,
+  
+          fee: args.percentageFee,
+          invoice: paymentRequest,
+          orderSide: args.orderSide,
+          claimAddress: args.claimAddress!,
+          onchainAmount: args.onchainAmount,
+          status: SwapUpdateEvent.SwapCreated,
+          preimageHash: getHexString(args.preimageHash),
+          minerFeeInvoicePreimage: minerFeeInvoicePreimage,
+          minerFeeOnchainAmount: args.prepayMinerFeeOnchainAmount,
+        });
+      // } catch (error) {
+      //   this.logger.error("swapmanager.564 addreverseswap failed: " + error);
+      // }
+
     }
 
     return {
