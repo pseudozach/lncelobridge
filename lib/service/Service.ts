@@ -754,7 +754,8 @@ class Service {
       invoiceAmount,
       BaseFeeType.NormalClaim,
     );
-    const expectedAmount = Math.floor(invoiceAmount * rate) + baseFee + percentageFee;
+    const expectedAmount = Math.floor(invoiceAmount * rate) + (baseFee || 0) + percentageFee;
+    this.logger.verbose(`service.758 expectedAmount: ${swap.pair} ${baseFee} ${percentageFee} ${expectedAmount}`);
 
     if (swap.onchainAmount && expectedAmount > swap.onchainAmount) {
       const maxInvoiceAmount = this.calculateInvoiceAmount(
@@ -794,7 +795,7 @@ class Service {
         getSwapMemo(lightningCurrency, false),
       ),
     }));
-    
+
     return {
       expectedAmount,
       acceptZeroConf,
