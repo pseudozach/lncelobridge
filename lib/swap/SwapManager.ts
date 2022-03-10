@@ -221,6 +221,10 @@ class SwapManager {
 
       claimAddress = await receivingCurrency.wallet.getAddress();
 
+      // HACK: send tokenaddress as redeemScript to frontend so user can claim
+      redeemScript = Buffer.from(this.walletManager.celoManager?.tokenAddresses.get(args.quoteCurrency) || '', 'utf8');
+      this.logger.verbose('swapmanager.226 redeemScript from args.quoteCurrency ' + getHexString(redeemScript!) + ', ' + args.quoteCurrency);
+      
       await this.swapRepository.addSwap({
         id,
         pair,

@@ -257,11 +257,11 @@ class CeloNursery extends EventEmitter {
         return;
       }
 
-      if (erc20SwapValues.tokenAddress !== erc20Wallet.getTokenAddress()) {
+      if (erc20SwapValues.tokenAddress.toLowerCase() !== erc20Wallet.getTokenAddress().toLowerCase()) {
         this.emit(
           'lockup.failed',
           swap,
-          Errors.INVALID_TOKEN_LOCKED(erc20SwapValues.tokenAddress, this.celoManager.address).message,
+          Errors.INVALID_TOKEN_LOCKED(erc20SwapValues.tokenAddress, erc20Wallet.getTokenAddress()).message,
         );
         return;
       }

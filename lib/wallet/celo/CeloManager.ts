@@ -146,6 +146,7 @@ class CeloManager {
         if (token.decimals) {
           if (!wallets.has(token.symbol)) {
             // Wrap the address in "utils.getAddress" to make sure it is a checksum one
+            this.logger.verbose(`celomanager.149 adding token, address: ${token.symbol} ${token.contractAddress} ${utils.getAddress(token.contractAddress)}`);
             this.tokenAddresses.set(token.symbol, utils.getAddress(token.contractAddress));
             const provider = new ERC20WalletProvider(this.logger, signer, {
               symbol: token.symbol,

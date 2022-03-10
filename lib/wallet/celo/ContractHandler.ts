@@ -27,6 +27,17 @@ class ContractHandler {
     timeLock: number,
   ): Promise<ContractTransaction> => {
     this.logger.debug(`Locking ${amount} Ether with preimage hash: ${getHexString(preimageHash)}`);
+
+    const gasLimitEstimation = await this.etherSwap.estimateGas.lock(
+      preimageHash,
+      claimAddress,
+      timeLock,
+      {
+        value: amount,
+      },
+    );
+    this.logger.debug(`contracthandler.39 lockupEther ${gasLimitEstimation}`);
+
     return this.etherSwap.lock(preimageHash, claimAddress, timeLock, {
       value: amount,
       gasPrice: await getGasPrice(this.etherSwap.provider),
@@ -114,6 +125,15 @@ class ContractHandler {
     let tokenlc = token.getTokenAddress().toLowerCase();
     this.logger.error("contracthandler erc20swap lock: " + preimageHash + "," + amount + "," + tokenlc + "," + claimAddress + "," + timeLock);
     
+    const gasLimitEstimation = await this.erc20Swap.estimateGas.lock(
+      preimageHash,
+      amount,
+      token.getTokenAddress(),
+      claimAddress,
+      timeLock,
+    );
+    this.logger.debug(`contracthandler.135 lockupToken ${gasLimitEstimation}`);
+
     return this.erc20Swap.lock(
       preimageHash,
       amount,
@@ -174,6 +194,7 @@ class ContractHandler {
       timeLock,
       {
         gasPrice: await getGasPrice(this.erc20Swap.provider),
+        gasLimit: BigNumber.from(1000000),
       }
     );
   }
