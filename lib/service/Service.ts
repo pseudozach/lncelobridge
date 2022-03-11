@@ -262,7 +262,9 @@ class Service {
     };
 
     for (const [symbol, wallet] of this.walletManager.wallets) {
-      map.set(symbol, await getBalance(symbol, wallet));
+      const gotbalance = await getBalance(symbol, wallet);
+      this.logger.verbose(`service.265 getBalance ${symbol} ${gotbalance}`);
+      map.set(symbol, gotbalance);
     }
 
     return response;

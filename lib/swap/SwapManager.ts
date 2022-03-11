@@ -526,6 +526,10 @@ class SwapManager {
       refundAddress = await this.walletManager.wallets.get(sendingCurrency.symbol)!.getAddress();
       refundAddress = refundAddress.toLowerCase();
 
+      // HACK: send tokenaddress as redeemScript to frontend so user can claim
+      redeemScript = Buffer.from(this.walletManager.celoManager?.tokenAddresses.get(args.quoteCurrency) || '', 'utf8');
+      this.logger.verbose('swapmanager.534 redeemScript ' + this.walletManager.celoManager?.tokenAddresses.get(args.quoteCurrency) + ', ' + getHexString(redeemScript));
+   
       this.logger.verbose("prepared reverse swap stuff: " + blockNumber + ", " + lockupAddress + ", " + refundAddress);
 
       this.logger.verbose("swapmanager.527 adding reverse swap: " + stringify({
