@@ -13,7 +13,7 @@ ERC20 swap contract: [mainnet](https://explorer.celo.org/address/0x58afA0afF6F44
 `cd lncelobridge && npm i && npm run compile`  
 * Start btc & lnd  
 `npm run docker:regtest`
-* No need to start local celo node - regtest does not exist - connect to public node
+* Run a local celo node by following instructions at [docs.celo.org](https://docs.celo.org/getting-started/mainnet/running-a-full-node-in-mainnet)
 * Fund signer account from [testnet faucet](https://celo.org/developers/faucet)
 * Copy boltz.gitpod.conf to ~/.boltz/boltz.conf and modify as needed  
 * Start the app  
